@@ -1,1 +1,0 @@
-web: cd client && npm nun build
