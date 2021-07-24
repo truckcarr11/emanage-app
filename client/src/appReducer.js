@@ -3,13 +3,14 @@ import { createSlice } from "@reduxjs/toolkit";
 export const appReducer = createSlice({
   name: "app",
   initialState: {
-    companyId: 0,
+    employee: {},
     employees: [],
     positions: [],
+    companies: [],
   },
   reducers: {
-    setCompanyId: (state, action) => {
-      state.companyId = action.payload;
+    setEmployee: (state, action) => {
+      state.employee = action.payload;
     },
     setEmployees: (state, action) => {
       state.employees = action.payload;
@@ -17,13 +18,18 @@ export const appReducer = createSlice({
     setPositions: (state, action) => {
       state.positions = action.payload;
     },
+    setCompanies: (state, action) => {
+      state.companies = action.payload;
+    },
   },
 });
 
-export const { setCompanyId, setEmployees, setPositions } = appReducer.actions;
+export const { setEmployee, setEmployees, setPositions, setCompanies } =
+  appReducer.actions;
 
-export const selectCompanyId = (state) => state.app.companyId;
+export const selectEmployee = (state) => state.app.employee;
 export const selectEmployees = (state) => state.app.employees;
 export const selectPositions = (state) => state.app.positions;
+export const selectCompanies = (state) => state.app.companies;
 
 export default appReducer.reducer;

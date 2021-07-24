@@ -113,7 +113,7 @@ func main() {
 
 			var employee Employee
 
-			err := db.QueryRow(`SELECT password, company_id, id FROM employees WHERE username=$1`, loginInput.Username).Scan(&employee.Password, &employee.CompanyId, &employee.Id)
+			err := db.QueryRow(`SELECT password, company_id, id, is_admin FROM employees WHERE username=$1`, loginInput.Username).Scan(&employee.Password, &employee.CompanyId, &employee.Id, &employee.IsAdmin)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
@@ -126,10 +126,11 @@ func main() {
 				return
 			}
 
+			employee.Password = ""
+
 			c.JSON(http.StatusOK, gin.H{
-				"status":     http.StatusOK,
-				"companyId":  employee.CompanyId,
-				"employeeId": employee.Id,
+				"status":   http.StatusOK,
+				"employee": employee,
 			})
 		})
 

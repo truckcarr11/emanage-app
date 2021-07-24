@@ -2,10 +2,9 @@ import { DataGrid } from "@material-ui/data-grid";
 import { useSelector } from "react-redux";
 import { selectEmployees, selectPositions } from "../appReducer";
 
-export default function EmployeeList() {
+export default function EmployeeList(props) {
   const employees = useSelector(selectEmployees);
   const positions = useSelector(selectPositions);
-  console.log(positions);
 
   return (
     <div style={{ height: 400, width: "100%" }}>
@@ -21,20 +20,20 @@ export default function EmployeeList() {
                 type: "string",
                 headerName: "First Name",
                 width: 300,
-                editable: true,
+                editable: props.isAdmin,
               },
               {
                 field: "LastName",
                 type: "string",
                 headerName: "Last Name",
                 width: 300,
-                editable: true,
+                editable: props.isAdmin,
               },
               {
                 field: "PositionName",
                 headerName: "Position",
                 type: "singleSelect",
-                editable: true,
+                editable: props.isAdmin,
                 width: 300,
                 valueOptions: positions.map((position) => position.Name),
               },
@@ -43,7 +42,7 @@ export default function EmployeeList() {
                 type: "boolean",
                 width: 300,
                 headerName: "Admin",
-                editable: true,
+                editable: props.isAdmin,
               },
             ]}
             rows={employees || []}

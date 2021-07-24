@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
@@ -12,6 +12,8 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Copyright from "../components/Copyright";
 import CompaniesDropdown from "../components/CompaniesDropdown";
+import { useSelector } from "react-redux";
+import { selectCompanies } from "../appReducer";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -50,19 +52,13 @@ const useStyles = makeStyles((theme) => ({
 export default function SignUpPage() {
   const classes = useStyles();
   const history = useHistory();
+  const companies = useSelector(selectCompanies);
 
   const [companyId, setCompanyId] = useState(null);
-  const [companies, setCompanies] = useState([]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    fetch("/api/companies")
-      .then((response) => response.json())
-      .then((data) => setCompanies(data.data));
-  }, []);
 
   function handleCompanyChange(event) {
     setCompanyId(event.target.value);

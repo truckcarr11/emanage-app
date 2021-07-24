@@ -34,8 +34,7 @@ function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   function onSignOut() {
-    localStorage.removeItem("eManageEmployeeId");
-    localStorage.removeItem("eManageCompanyId");
+    localStorage.removeItem("eManageEmployee");
     history.push("/signin");
   }
 

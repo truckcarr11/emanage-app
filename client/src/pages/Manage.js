@@ -1,30 +1,39 @@
 import Header from "../components/Header";
 import EmployeeList from "../components/EmployeeList";
 import { useDispatch } from "react-redux";
-import { setPositions, setCompanyId, setEmployees } from "../appReducer";
-import { useEffect } from "react";
+import {
+  setPositions,
+  setEmployees,
+  setEmployee as eManageSetEmployee,
+} from "../appReducer";
+import { useEffect, useState } from "react";
 
 export default function Manage() {
   const dispatch = useDispatch();
+  const [employee, setEmployee] = useState(
+    JSON.parse(localStorage.getItem("eManageEmployee"))
+  );
 
   useEffect(() => {
-    let employeeId = localStorage.getItem("eManageEmployeeId");
-    if (employeeId) {
-      let companyId = localStorage.getItem("eManageCompanyId");
-      dispatch(setCompanyId(companyId));
-      fetch(`/api/company/${companyId}/employees`)
+    if (employee !== undefined) {
+      dispatch(eManageSetEmployee(employee));
+      fetch(`/api/company/${employee.CompanyId}/employees`)
         .then((response) => response.json())
         .then((data) => dispatch(setEmployees(data.data)));
-      fetch(`/api/company/${companyId}/positions`)
+      fetch(`/api/company/${employee.CompanyId}/positions`)
         .then((response) => response.json())
         .then((data) => dispatch(setPositions(data.data)));
+    } else {
+      //User is not logged in, send them to sign in page with no back button
+      //Location replace doesn't allow the use of the back button
+      window.location.replace(window.location.origin + "/signin");
     }
-  }, [dispatch]);
+  }, [dispatch, employee]);
 
   return (
     <>
       <Header />
-      <EmployeeList />
+      <EmployeeList isAdmin={employee.IsAdmin} />
     </>
   );
 }
