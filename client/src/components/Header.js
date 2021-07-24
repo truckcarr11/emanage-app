@@ -4,7 +4,16 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
+import Drawer from "@material-ui/core/Drawer";
 import MenuIcon from "@material-ui/icons/Menu";
+import { useHistory } from "react-router-dom";
+import { useState } from "react";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import Person from "@material-ui/icons/Person";
+import Assignment from "@material-ui/icons/Assignment";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,6 +29,15 @@ const useStyles = makeStyles((theme) => ({
 
 function Header() {
   const classes = useStyles();
+  const history = useHistory();
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  function onSignOut() {
+    localStorage.removeItem("eManageEmployeeId");
+    localStorage.removeItem("eManageCompanyId");
+    history.push("/signin");
+  }
 
   return (
     <div className={classes.root}>
@@ -31,14 +49,32 @@ function Header() {
             color="inherit"
             aria-label="menu"
           >
-            <MenuIcon />
+            <MenuIcon onClick={() => setDrawerOpen(true)} />
           </IconButton>
           <Typography variant="h6" className={classes.title}>
             eManage
           </Typography>
-          <Button color="inherit">Login</Button>
+          <Button color="inherit" onClick={onSignOut}>
+            Signout
+          </Button>
         </Toolbar>
       </AppBar>
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <List>
+          <ListItem button key={"employees"}>
+            <ListItemIcon>
+              <Person />
+            </ListItemIcon>
+            <ListItemText primary={"Employees"} />
+          </ListItem>
+          <ListItem button key={"positions"}>
+            <ListItemIcon>
+              <Assignment />
+            </ListItemIcon>
+            <ListItemText primary={"Positions"} />
+          </ListItem>
+        </List>
+      </Drawer>
     </div>
   );
 }

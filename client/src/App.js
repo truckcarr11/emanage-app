@@ -1,17 +1,22 @@
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import HomePage from "./pages/home-page/HomePage";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
+import Manage from "./pages/Manage";
 
-function App() {
+export default function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/">
-          <HomePage />
-          asdasd
+        <Route path="/signin">
+          <SignInPage />
+        </Route>
+        <Route path="/signup">
+          <SignUpPage />
+        </Route>
+        <Route path="/manage">
+          <Manage />
         </Route>
       </Switch>
     </Router>
   );
 }
-
-export default App;
