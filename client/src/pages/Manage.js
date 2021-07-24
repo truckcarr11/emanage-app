@@ -1,18 +1,21 @@
 import Header from "../components/Header";
 import EmployeeList from "../components/EmployeeList";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   setPositions,
   setEmployees,
   setEmployee as eManageSetEmployee,
+  selectManagePage,
 } from "../appReducer";
 import { useEffect, useState } from "react";
+import PositionList from "../components/PositionList";
 
 export default function Manage() {
   const dispatch = useDispatch();
   const [employee, setEmployee] = useState(
     JSON.parse(localStorage.getItem("eManageEmployee"))
   );
+  const managePage = useSelector(selectManagePage);
 
   useEffect(() => {
     if (employee !== undefined) {
@@ -33,7 +36,11 @@ export default function Manage() {
   return (
     <>
       <Header />
-      <EmployeeList isAdmin={employee.IsAdmin} />
+      {managePage === "employees" ? (
+        <EmployeeList isAdmin={employee.IsAdmin} />
+      ) : (
+        <PositionList isAdmin={employee.IsAdmin} />
+      )}
     </>
   );
 }

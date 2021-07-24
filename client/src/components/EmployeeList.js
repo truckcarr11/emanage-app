@@ -16,6 +16,13 @@ export default function EmployeeList(props) {
             getRowId={(employee) => employee.Id}
             columns={[
               {
+                field: "Id",
+                type: "string",
+                headerName: "Employee Id",
+                width: 300,
+                editable: false,
+              },
+              {
                 field: "FirstName",
                 type: "string",
                 headerName: "First Name",

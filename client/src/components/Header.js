@@ -14,6 +14,8 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Person from "@material-ui/icons/Person";
 import Assignment from "@material-ui/icons/Assignment";
+import { setManagePage } from "../appReducer";
+import { useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,12 +32,23 @@ const useStyles = makeStyles((theme) => ({
 function Header() {
   const classes = useStyles();
   const history = useHistory();
+  const dispatch = useDispatch();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   function onSignOut() {
     localStorage.removeItem("eManageEmployee");
     history.push("/signin");
+  }
+
+  function onClickEmployees() {
+    dispatch(setManagePage("employees"));
+    setDrawerOpen(false);
+  }
+
+  function onClickPositions() {
+    dispatch(setManagePage("positions"));
+    setDrawerOpen(false);
   }
 
   return (
@@ -60,13 +73,13 @@ function Header() {
       </AppBar>
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <List>
-          <ListItem button key={"employees"}>
+          <ListItem button key={"employees"} onClick={onClickEmployees}>
             <ListItemIcon>
               <Person />
             </ListItemIcon>
             <ListItemText primary={"Employees"} />
           </ListItem>
-          <ListItem button key={"positions"}>
+          <ListItem button key={"positions"} onClick={onClickPositions}>
             <ListItemIcon>
               <Assignment />
             </ListItemIcon>
