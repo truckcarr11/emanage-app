@@ -160,7 +160,7 @@ func main() {
 	}
 
 	//Handle any other routes, mostly for serving the index.html page since we are using react router
-	router.GET("*", func(c *gin.Context) {
+	router.GET("/*", func(c *gin.Context) {
 		c.File("/client/build/index.html")
 	})
 
