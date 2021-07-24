@@ -59,7 +59,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    fetch("/companies")
+    fetch("/api/companies")
       .then((response) => response.json())
       .then((data) => setCompanies(data.data));
   }, []);
@@ -69,7 +69,7 @@ export default function SignUpPage() {
   }
 
   function signUp() {
-    fetch("/signup", {
+    fetch("/api/signup", {
       method: "POST",
       body: JSON.stringify({
         firstName,

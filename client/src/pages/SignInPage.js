@@ -61,7 +61,7 @@ export default function SignInPage() {
   function signIn(e) {
     e.preventDefault();
 
-    fetch("/signin", {
+    fetch("/api/signin", {
       method: "POST",
       body: JSON.stringify({
         username,

@@ -12,10 +12,10 @@ export default function Manage() {
     if (employeeId) {
       let companyId = localStorage.getItem("eManageCompanyId");
       dispatch(setCompanyId(companyId));
-      fetch(`/company/${companyId}/employees`)
+      fetch(`/api/company/${companyId}/employees`)
         .then((response) => response.json())
         .then((data) => dispatch(setEmployees(data.data)));
-      fetch(`/company/${companyId}/positions`)
+      fetch(`/api/company/${companyId}/positions`)
         .then((response) => response.json())
         .then((data) => dispatch(setPositions(data.data)));
     }
