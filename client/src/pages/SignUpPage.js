@@ -11,9 +11,6 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Copyright from "../components/Copyright";
-import CompaniesDropdown from "../components/CompaniesDropdown";
-import { useSelector } from "react-redux";
-import { selectCompanies } from "../appReducer";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,17 +49,13 @@ const useStyles = makeStyles((theme) => ({
 export default function SignUpPage() {
   const classes = useStyles();
   const history = useHistory();
-  const companies = useSelector(selectCompanies);
 
-  const [companyId, setCompanyId] = useState(null);
+  const [companyName, setCompanyName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  function handleCompanyChange(event) {
-    setCompanyId(event.target.value);
-  }
 
   function signUp() {
     fetch("/api/signup", {
@@ -70,13 +63,18 @@ export default function SignUpPage() {
       body: JSON.stringify({
         firstName,
         lastName,
+        email,
         username,
         password,
-        companyId,
+        companyName,
       }),
     })
       .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        if (data.status === 200) {
+          history.push("/signin");
+        }
+      });
   }
 
   return (
@@ -93,7 +91,7 @@ export default function SignUpPage() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <form className={classes.form} noValidate>
+          <form className={classes.form}>
             <TextField
               variant="outlined"
               margin="normal"
@@ -121,6 +119,18 @@ export default function SignUpPage() {
               margin="normal"
               required
               fullWidth
+              id="email"
+              label="Email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
               id="username"
               label="Username"
               name="username"
@@ -139,13 +149,19 @@ export default function SignUpPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <CompaniesDropdown
-              companyId={companyId}
-              handleCompanyChange={handleCompanyChange}
-              companies={companies}
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="companyName"
+              label="Company Name"
+              name="companyName"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
             />
             <Button
-              type="submit"
+              type="button"
               fullWidth
               variant="contained"
               color="primary"

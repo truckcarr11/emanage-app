@@ -4,9 +4,12 @@ import { useSelector } from "react-redux";
 import { selectPositions } from "../appReducer";
 
 export default function PositionList(props) {
-  const [positions, setPositions] = useState(
-    useSelector(selectPositions) || []
-  );
+  const positionsTemp = useSelector(selectPositions);
+  const [positions, setPositions] = useState(positionsTemp);
+
+  useEffect(() => {
+    setPositions(positionsTemp);
+  }, [positionsTemp]);
 
   return (
     <div style={{ height: 400, width: "100%" }}>
@@ -28,7 +31,7 @@ export default function PositionList(props) {
                 type: "string",
                 headerName: "Name",
                 width: 300,
-                editable: props.isAdmin,
+                editable: true,
               },
             ]}
             rows={[...positions].sort((a, b) => {

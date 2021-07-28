@@ -3,18 +3,13 @@ import { createSlice } from "@reduxjs/toolkit";
 export const appReducer = createSlice({
   name: "app",
   initialState: {
-    managePage: "employees",
-    employee: {},
+    user: {},
     employees: [],
     positions: [],
-    companies: [],
   },
   reducers: {
-    setManagePage: (state, action) => {
-      state.managePage = action.payload;
-    },
-    setEmployee: (state, action) => {
-      state.employee = action.payload;
+    setUser: (state, action) => {
+      state.user = action.payload;
     },
     setEmployees: (state, action) => {
       state.employees = action.payload;
@@ -22,24 +17,14 @@ export const appReducer = createSlice({
     setPositions: (state, action) => {
       state.positions = action.payload;
     },
-    setCompanies: (state, action) => {
-      state.companies = action.payload;
-    },
   },
 });
 
-export const {
-  setEmployee,
-  setEmployees,
-  setPositions,
-  setCompanies,
-  setManagePage,
-} = appReducer.actions;
+export const { setUser, setEmployees, setPositions, setManagePage } =
+  appReducer.actions;
 
-export const selectEmployee = (state) => state.app.employee;
+export const selectUser = (state) => state.app.user;
 export const selectEmployees = (state) => state.app.employees;
 export const selectPositions = (state) => state.app.positions;
-export const selectCompanies = (state) => state.app.companies;
-export const selectManagePage = (state) => state.app.managePage;
 
 export default appReducer.reducer;

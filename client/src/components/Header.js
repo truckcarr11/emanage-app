@@ -7,15 +7,15 @@ import IconButton from "@material-ui/core/IconButton";
 import Drawer from "@material-ui/core/Drawer";
 import MenuIcon from "@material-ui/icons/Menu";
 import { useHistory } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Person from "@material-ui/icons/Person";
 import Assignment from "@material-ui/icons/Assignment";
-import { setManagePage } from "../appReducer";
-import { useDispatch } from "react-redux";
+import { selectUser } from "../appReducer";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,25 +29,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Header() {
+export default function Header(props) {
   const classes = useStyles();
   const history = useHistory();
-  const dispatch = useDispatch();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const user = useSelector(selectUser);
 
   function onSignOut() {
-    localStorage.removeItem("eManageEmployee");
+    localStorage.removeItem("eManageUser");
     history.push("/signin");
   }
 
   function onClickEmployees() {
-    dispatch(setManagePage("employees"));
+    props.setManagePage("employees");
+    localStorage.setItem("managePage", "employees");
     setDrawerOpen(false);
   }
 
   function onClickPositions() {
-    dispatch(setManagePage("positions"));
+    localStorage.setItem("managePage", "positions");
+    props.setManagePage("positions");
     setDrawerOpen(false);
   }
 
@@ -63,9 +65,14 @@ function Header() {
           >
             <MenuIcon onClick={() => setDrawerOpen(true)} />
           </IconButton>
-          <Typography variant="h6" className={classes.title}>
-            eManage
-          </Typography>
+          <>
+            <Typography variant="h6" className={classes.title}>
+              eManage
+            </Typography>
+            <Typography variant="h6" className={classes.title}>
+              {user.CompanyName}
+            </Typography>
+          </>
           <Button color="inherit" onClick={onSignOut}>
             Signout
           </Button>
@@ -90,5 +97,3 @@ function Header() {
     </div>
   );
 }
-
-export default Header;

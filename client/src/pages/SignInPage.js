@@ -13,7 +13,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Copyright from "../components/Copyright";
-import { setEmployee } from "../appReducer";
+import { setUser } from "../appReducer";
 import { useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -71,11 +71,8 @@ export default function SignInPage() {
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 200) {
-          dispatch(setEmployee(data.employee));
-          localStorage.setItem(
-            "eManageEmployee",
-            JSON.stringify(data.employee)
-          );
+          dispatch(setUser(data.user));
+          localStorage.setItem("eManageUser", JSON.stringify(data.user));
           history.push("/manage");
         }
       })
