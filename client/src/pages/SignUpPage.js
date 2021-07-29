@@ -11,6 +11,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Copyright from "../components/Copyright";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,8 +57,10 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [signingUp, setSigningUp] = useState(false);
 
   function signUp() {
+    setSigningUp(true);
     fetch("/api/signup", {
       method: "POST",
       body: JSON.stringify({
@@ -167,8 +170,10 @@ export default function SignUpPage() {
               color="primary"
               className={classes.submit}
               onClick={signUp}
+              disabled={signingUp}
             >
               Sign Up
+              {signingUp && <CircularProgress size={24} />}
             </Button>
             <Grid container>
               <Grid item>

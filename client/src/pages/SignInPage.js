@@ -15,6 +15,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import Copyright from "../components/Copyright";
 import { setUser } from "../appReducer";
 import { useDispatch } from "react-redux";
+import jwt_decode from "jwt-decode";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -57,8 +59,10 @@ export default function SignInPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
   function signIn(e) {
+    setSigningIn(true);
     e.preventDefault();
 
     fetch("/api/signin", {
@@ -70,9 +74,11 @@ export default function SignInPage() {
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.status === 200) {
-          dispatch(setUser(data.user));
-          localStorage.setItem("eManageUser", JSON.stringify(data.user));
+        if (data !== undefined) {
+          let decoded = jwt_decode(data);
+          dispatch(setUser(decoded.user));
+          localStorage.setItem("eManageUser", JSON.stringify(decoded.user));
+          localStorage.setItem("eManageToken", data);
           history.push("/manage");
         }
       })
@@ -131,8 +137,10 @@ export default function SignInPage() {
               color="primary"
               className={classes.submit}
               onClick={signIn}
+              disabled={signingIn}
             >
               Sign In
+              {signingIn && <CircularProgress size={24} />}
             </Button>
             <Grid container>
               <Grid item xs>

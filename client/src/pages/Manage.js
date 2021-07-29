@@ -10,33 +10,42 @@ import AddNewDialog from "../components/AddNewDialog";
 
 export default function Manage() {
   const dispatch = useDispatch();
-  const [user, _] = useState(JSON.parse(localStorage.getItem("eManageUser")));
+  const [user] = useState(JSON.parse(localStorage.getItem("eManageUser")));
+  const [token] = useState(localStorage.getItem("eManageToken"));
   const [managePage, setManagePage] = useState(
     localStorage.getItem("managePage")
   );
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (user !== undefined) {
+    if (user !== null) {
       dispatch(setUser(user));
-      fetch(`/api/company/${user.CompanyId}/employees`)
+      fetch(`/api/company/${user.companyId}/employees`, {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
         .then((response) => response.json())
         .then((data) => {
-          if (data.data !== null) {
-            dispatch(setEmployees(data.data));
+          if (data !== null) {
+            dispatch(setEmployees(data));
           }
         });
-      fetch(`/api/company/${user.CompanyId}/positions`)
+      fetch(`/api/company/${user.companyId}/positions`, {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
         .then((response) => response.json())
         .then((data) => {
-          if (data.data !== null) dispatch(setPositions(data.data));
+          if (data !== null) dispatch(setPositions(data));
         });
     } else {
       //User is not logged in, send them to sign in page with no back button
       //Location replace doesn't allow the use of the back button
       window.location.replace(window.location.origin + "/signin");
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, token]);
 
   return (
     <>

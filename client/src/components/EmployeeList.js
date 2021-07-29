@@ -19,30 +19,30 @@ export default function EmployeeList(props) {
           <DataGrid
             autoHeight
             disableSelectionOnClick
-            getRowId={(employee) => employee.Id}
+            getRowId={(employee) => employee.id}
             columns={[
               {
-                field: "Id",
+                field: "id",
                 type: "string",
                 headerName: "Employee Id",
                 width: 300,
               },
               {
-                field: "FirstName",
+                field: "firstName",
                 type: "string",
                 headerName: "First Name",
                 width: 300,
                 editable: true,
               },
               {
-                field: "LastName",
+                field: "lastName",
                 type: "string",
                 headerName: "Last Name",
                 width: 300,
                 editable: true,
               },
               {
-                field: "PositionName",
+                field: "positionName",
                 headerName: "Position",
                 type: "singleSelect",
                 width: 300,

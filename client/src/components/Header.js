@@ -7,7 +7,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Drawer from "@material-ui/core/Drawer";
 import MenuIcon from "@material-ui/icons/Menu";
 import { useHistory } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -26,6 +26,9 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     flexGrow: 1,
+  },
+  grow: {
+    flexGrow: 50,
   },
 }));
 
@@ -62,17 +65,21 @@ export default function Header(props) {
             className={classes.menuButton}
             color="inherit"
             aria-label="menu"
+            onClick={() => setDrawerOpen(true)}
           >
-            <MenuIcon onClick={() => setDrawerOpen(true)} />
+            <MenuIcon />
           </IconButton>
-          <>
-            <Typography variant="h6" className={classes.title}>
-              eManage
-            </Typography>
-            <Typography variant="h6" className={classes.title}>
-              {user.CompanyName}
-            </Typography>
-          </>
+          <Typography variant="h6" className={classes.title}>
+            eManage
+          </Typography>
+          <div className={classes.grow} />
+          <Typography variant="h6" className={classes.title}>
+            {user.companyName}
+          </Typography>
+          <div className={classes.grow} />
+          <Typography variant="h6" className={classes.title}>
+            Hello, {user.username}
+          </Typography>
           <Button color="inherit" onClick={onSignOut}>
             Signout
           </Button>

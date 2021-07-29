@@ -1,5 +1,5 @@
 import { DataGrid } from "@material-ui/data-grid";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectPositions } from "../appReducer";
 
@@ -11,6 +11,10 @@ export default function PositionList(props) {
     setPositions(positionsTemp);
   }, [positionsTemp]);
 
+  const handleEditCellChangeCommitted = useCallback((data) => {
+    console.log(data);
+  }, []);
+
   return (
     <div style={{ height: 400, width: "100%" }}>
       <div style={{ display: "flex", height: "100%" }}>
@@ -18,16 +22,16 @@ export default function PositionList(props) {
           <DataGrid
             autoHeight
             disableSelectionOnClick
-            getRowId={(position) => position.Id}
+            getRowId={(position) => position.id}
             columns={[
               {
-                field: "Id",
+                field: "id",
                 type: "string",
                 headerName: "Position Id",
                 width: 300,
               },
               {
-                field: "Name",
+                field: "name",
                 type: "string",
                 headerName: "Name",
                 width: 300,
@@ -35,8 +39,9 @@ export default function PositionList(props) {
               },
             ]}
             rows={[...positions].sort((a, b) => {
-              return a.Id - b.Id;
+              return a.id - b.id;
             })}
+            onEditCellChangeCommitted={handleEditCellChangeCommitted}
           />
         </div>
       </div>

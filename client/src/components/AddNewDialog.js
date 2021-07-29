@@ -42,17 +42,17 @@ export default function AddNewDialog(props) {
   function addNewEmployee() {}
 
   function addNewPosition() {
-    fetch("/api/position", {
+    fetch("/api/position/", {
       method: "POST",
       body: JSON.stringify({
         name: positionName,
-        companyId: user.CompanyId,
+        companyId: user.companyId,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.status === 200) {
-          dispatch(setPositions(data.data));
+        if (data !== null) {
+          dispatch(setPositions(data));
           props.setOpen(false);
         }
       });
@@ -101,7 +101,7 @@ export default function AddNewDialog(props) {
                   autoWidth
                 >
                   {positions.map((position) => (
-                    <MenuItem value={position.Id}>{position.Name}</MenuItem>
+                    <MenuItem value={position.id}>{position.Name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>

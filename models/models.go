@@ -1,4 +1,4 @@
-package helpers
+package models
 
 type LoginInput struct {
 	Username string `json:"username" binding:"required"`
@@ -17,7 +17,7 @@ type RegisterInput struct {
 type CreateEmployeeInput struct {
 	FirstName string `json:"firstName" binding:"required"`
 	LastName  string `json:"lastName" binding:"required"`
-	CompanyId int    `json:"companyId" binding:"required"`
+	CompanyID int    `json:"companyId" binding:"required"`
 }
 
 type CreatePositionInput struct {
@@ -26,28 +26,28 @@ type CreatePositionInput struct {
 }
 
 type Company struct {
-	Id   int
-	Name string
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type Employee struct {
-	Id           int
-	PositionId   int
-	PositionName string
-	FirstName    string
-	LastName     string
+	ID           int    `json:"id"`
+	PositionID   int    `json:"positionId"`
+	PositionName string `json:"positionName"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
 }
 
 type User struct {
-	Id          int
-	CompanyId   int
-	CompanyName string
-	Username    string
-	Password    string
+	ID          int    `json:"id"`
+	CompanyID   int    `json:"companyId"`
+	CompanyName string `json:"companyName"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
 }
 
 type Position struct {
-	Id        int
-	CompanyId int
-	Name      string
+	ID        int    `json:"id"`
+	CompanyID int    `json:"companyId"`
+	Name      string `json:"name"`
 }

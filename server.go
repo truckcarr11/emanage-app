@@ -1,25 +1,51 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/golang-jwt/jwt"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"github.com/truckcarr11/emanage/helpers"
-	"github.com/truckcarr11/emanage/routes"
-
-	"github.com/gin-gonic/contrib/static"
-	"github.com/gin-gonic/gin"
+	"github.com/truckcarr11/emanage/models"
 )
 
-func SetDB(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
+var DB *sql.DB
+var JWT_SECRET []byte
 
-		c.Set("db", db)
-		c.Next()
-	}
+func IsAuthorized(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header["Authorization"] != nil {
+
+			var claims jwt.MapClaims
+
+			token, err := jwt.ParseWithClaims(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "), &claims, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("there was an error")
+				}
+				return JWT_SECRET, nil
+			})
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+			//log.Println("claims:", claims)
+			if token.Valid {
+				handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "claims", claims)))
+			}
+		} else {
+
+			http.Error(w, "Not authorized", http.StatusUnauthorized)
+		}
+	})
 }
 
 func main() {
@@ -27,117 +53,104 @@ func main() {
 	if !ok {
 		log.Fatalln("Database url does not exist")
 	}
+	SECRET, ok := os.LookupEnv("JWT_SECRET")
+	if !ok {
+		log.Fatalln("JWT secret does not exist")
+	}
+	JWT_SECRET = []byte(SECRET)
 
 	db, err := sql.Open("postgres", DATABASE_URL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	DB = db
 
-	router := gin.Default()
-
-	router.Use(SetDB(db))
+	//Set up routers
+	router := mux.NewRouter().StrictSlash(true)
+	nonAuth := router.PathPrefix("/api").Subrouter()
+	api := router.PathPrefix("/api").Subrouter()
+	api.Use(IsAuthorized)
+	companyRouter := api.PathPrefix("/company").Subrouter()
+	positionRouter := api.PathPrefix("/position").Subrouter()
 
 	//Serve the index.html page for the base route
-	router.Use(static.Serve("/", static.LocalFile("./client/build", true)))
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build")))
 
-	//Set up the companies router
-	routes.Companies(router)
+	//Set up the company routes
+	companyRouter.HandleFunc("/{companyID}/employees", GetCompanyEmployees).Methods("GET")
+	companyRouter.HandleFunc("/{companyID}/positions", GetCompanyPositions).Methods("GET")
 
 	//Set up the positions router
-	routes.Positions(router)
+	positionRouter.HandleFunc("/", CreatePosition).Methods("POST")
 
-	//Group any API routes under the /api route
-	//Handle any routes that arent by the above route handlers
-	api := router.Group("/api")
-	{
-		api.GET("/companies", func(c *gin.Context) {
-			rows, err := db.Query(`SELECT id, name FROM companies`)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	nonAuth.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+		var loginInput models.LoginInput
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		json.Unmarshal(reqBody, &loginInput)
+
+		var user models.User
+
+		err = db.QueryRow(`SELECT u.username, u.password, u.company_id, c.name FROM users u JOIN companies c ON c.id=u.company_id WHERE u.username=$1`,
+			loginInput.Username).Scan(&user.Username, &user.Password, &user.CompanyID, &user.CompanyName)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				http.Error(w, "Invalid login", http.StatusUnauthorized)
 				return
 			}
+			log.Println("db error:", err)
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
 
-			var companies []helpers.Company
-			for rows.Next() {
-				var company helpers.Company
-				rows.Scan(&company.Id, &company.Name)
-				companies = append(companies, company)
-			}
-			if err = rows.Err(); err != nil {
-				log.Println(err)
-			}
+		match := CheckPasswordHash(loginInput.Password, user.Password)
+		if !match {
+			http.Error(w, "Username or password is incorrect.", http.StatusUnauthorized)
+			return
+		}
 
-			c.JSON(http.StatusOK, gin.H{"data": companies})
-		})
+		user.Password = ""
 
-		api.POST("/signin", func(c *gin.Context) {
-			var loginInput helpers.LoginInput
-			if err := c.ShouldBindJSON(&loginInput); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
+		token, err := GenerateJWT(JWT_SECRET, user)
+		if err != nil {
+			fmt.Println("Failed to generate token")
+		}
 
-			var user helpers.User
+		json.NewEncoder(w).Encode(token)
+	}).Methods("POST")
 
-			err := db.QueryRow(`SELECT u.username, u.password, u.company_id, c.name, u.id FROM users u JOIN companies c ON c.id=u.company_id WHERE u.username=$1`,
-				loginInput.Username).Scan(&user.Username, &user.Password, &user.CompanyId, &user.CompanyName, &user.Id)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
+	nonAuth.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		var registerInput models.RegisterInput
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		json.Unmarshal(reqBody, &registerInput)
 
-			match := helpers.CheckPasswordHash(loginInput.Password, user.Password)
+		passwordHash, err := HashPassword(registerInput.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-			if !match {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Username or Password does not match."})
-				return
-			}
+		var newCompany models.Company
+		err = db.QueryRow(`INSERT INTO companies (name) VALUES($1) RETURNING id`, registerInput.CompanyName).Scan(&newCompany.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-			user.Password = ""
+		_, err = db.Query(`INSERT INTO users (first_name, last_name, company_id, username, password, email) VALUES($1, $2, $3, $4, $5, $6)`,
+			registerInput.FirstName, registerInput.LastName, newCompany.ID, registerInput.Username, passwordHash, registerInput.Email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-			c.JSON(http.StatusOK, gin.H{
-				"status": http.StatusOK,
-				"user":   user,
-			})
-		})
+		w.WriteHeader(http.StatusOK)
+	}).Methods("POST")
 
-		api.POST("/signup", func(c *gin.Context) {
-			var registerInput helpers.RegisterInput
-			if err := c.ShouldBindJSON(&registerInput); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-
-			passwordHash, err := helpers.HashPassword(registerInput.Password)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-
-			var newCompany helpers.Company
-			err = db.QueryRow(`INSERT INTO companies (name) VALUES($1) RETURNING id`, registerInput.CompanyName).Scan(&newCompany.Id)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-
-			_, err = db.Query(`INSERT INTO users (first_name, last_name, company_id, username, password, email) VALUES($1, $2, $3, $4, $5, $6)`,
-				registerInput.FirstName, registerInput.LastName, newCompany.Id, registerInput.Username, passwordHash, registerInput.Email)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(http.StatusOK, gin.H{
-				"status": http.StatusOK,
-			})
-		})
-	}
-
-	//Handle any other routes, mostly for serving the index.html page since we are using react router
-	router.NoRoute(func(c *gin.Context) {
-		c.File("./client/build/index.html")
-	})
-
-	router.Run()
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
