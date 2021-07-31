@@ -3,12 +3,15 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectPositions, setPositions } from "../appReducer";
 import { cloneDeep } from "lodash";
+import IconButton from "@material-ui/core/IconButton";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 export default function PositionList() {
   const dispatch = useDispatch();
   const positions = useSelector(selectPositions);
   const [token] = useState(localStorage.getItem("eManageToken"));
   const [previousState, setPreviousState] = useState({});
+  const [deletedRow, setDeletedRow] = useState({});
 
   function onCellValueChange(value) {
     //Update with new value immediatly
@@ -33,6 +36,7 @@ export default function PositionList() {
     })
       .then((response) => {
         if (response.status !== 200) {
+          //Something went wrong, revent change
           let tempPositions = cloneDeep(positions);
           tempPositions.forEach((position) => {
             if (position.id === previousState.id)
@@ -48,6 +52,34 @@ export default function PositionList() {
 
   function onEditCellChangeCommitted(data) {
     setPreviousState(data);
+  }
+
+  function deleteRow(params) {
+    setDeletedRow(params.row);
+    let tempPositions = cloneDeep(positions);
+    let deleteId = tempPositions.findIndex(
+      (position) => position.id === params.row.id
+    );
+    tempPositions.splice(deleteId, 1);
+    dispatch(setPositions(tempPositions));
+
+    fetch(`/api/position/${params.row.id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((response) => {
+        if (response.status !== 200) {
+          //Something went wrong, revent change
+          let tempPositions = cloneDeep(positions);
+          tempPositions.push(deletedRow);
+          dispatch(setPositions(tempPositions));
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   return (
@@ -71,6 +103,24 @@ export default function PositionList() {
                 headerName: "Name",
                 width: 300,
                 editable: true,
+              },
+              {
+                field: "",
+                align: "center",
+                disableColumnMenu: true,
+                hideSortIcons: true,
+                disableClickEventBubbling: true,
+                renderCell: (params) => {
+                  return (
+                    <IconButton
+                      aria-label="delete"
+                      color="secondary"
+                      onClick={() => deleteRow(params)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  );
+                },
               },
             ]}
             rows={[...positions].sort((a, b) => {

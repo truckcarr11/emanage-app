@@ -53,3 +53,17 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func DeletePosition(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	positionID := vars["positionID"]
+
+	_, err := DB.Exec(`DELETE FROM positions where positions.id=$1`, positionID)
+	if err != nil {
+		log.Println("err:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

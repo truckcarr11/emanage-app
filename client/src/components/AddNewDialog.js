@@ -27,6 +27,7 @@ export default function AddNewDialog(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
 
+  const [token] = useState(localStorage.getItem("eManageToken"));
   const positions = useSelector(selectPositions);
   const user = useSelector(selectUser);
   const [firstName, setFirstName] = useState("");
@@ -44,6 +45,9 @@ export default function AddNewDialog(props) {
   function addNewPosition() {
     fetch("/api/position/", {
       method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
       body: JSON.stringify({
         name: positionName,
         companyId: user.companyId,
