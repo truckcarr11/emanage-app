@@ -24,7 +24,7 @@ func CreatePosition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	positions, err := GetAllPositions(createPositionInput.CompanyID, DB)
+	positions, err := GetAllPositions(createPositionInput.CompanyID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -40,7 +40,9 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	var updatePositionInput models.UpdatePositionInput
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Println("err:", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	json.Unmarshal(reqBody, &updatePositionInput)
 

@@ -5,7 +5,12 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { useDispatch, useSelector } from "react-redux";
-import { selectPositions, selectUser, setPositions } from "../appReducer";
+import {
+  selectPositions,
+  selectUser,
+  setEmployees,
+  setPositions,
+} from "../appReducer";
 import { useState } from "react";
 import MenuItem from "@material-ui/core/MenuItem";
 import { makeStyles } from "@material-ui/core/styles";
@@ -32,7 +37,7 @@ export default function AddNewDialog(props) {
   const user = useSelector(selectUser);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [positionId, setPositionId] = useState(null);
+  const [positionId, setPositionId] = useState("");
   const [positionName, setPositionName] = useState("");
 
   function handleAdd() {
@@ -40,7 +45,30 @@ export default function AddNewDialog(props) {
     else addNewPosition();
   }
 
-  function addNewEmployee() {}
+  function addNewEmployee() {
+    fetch("/api/employee/", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        positionId,
+        companyId: user.companyId,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data !== null) {
+          dispatch(setEmployees(data));
+          props.setOpen(false);
+          setFirstName("");
+          setLastName("");
+          setPositionId("");
+        }
+      });
+  }
 
   function addNewPosition() {
     fetch("/api/position/", {
@@ -58,6 +86,7 @@ export default function AddNewDialog(props) {
         if (data !== null) {
           dispatch(setPositions(data));
           props.setOpen(false);
+          setPositionName("");
         }
       });
   }
@@ -106,7 +135,7 @@ export default function AddNewDialog(props) {
                 >
                   {positions.map((position) => (
                     <MenuItem value={position.id} key={position.id}>
-                      {position.Name}
+                      {position.name}
                     </MenuItem>
                   ))}
                 </Select>

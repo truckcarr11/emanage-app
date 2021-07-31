@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"time"
 
@@ -20,8 +19,30 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func GetAllPositions(companyID int, db *sql.DB) ([]models.Position, error) {
-	rows, err := db.Query(`SELECT * FROM positions WHERE company_id=$1`, companyID)
+func GetAllEmployees(companyID int) ([]models.Employee, error) {
+	rows, err := DB.Query(`SELECT * FROM employees WHERE company_id=$1`, companyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var employees []models.Employee
+	for rows.Next() {
+		var employee models.Employee
+		rows.Scan(&employee.ID, &employee.PositionID, &employee.CompanyID, &employee.FirstName, &employee.LastName)
+		employees = append(employees, employee)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		log.Println(err)
+	}
+
+	return employees, nil
+}
+
+func GetAllPositions(companyID int) ([]models.Position, error) {
+	rows, err := DB.Query(`SELECT * FROM positions WHERE company_id=$1`, companyID)
 	if err != nil {
 		return nil, err
 	}

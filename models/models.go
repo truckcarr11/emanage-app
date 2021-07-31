@@ -15,9 +15,17 @@ type RegisterInput struct {
 }
 
 type CreateEmployeeInput struct {
-	FirstName string `json:"firstName" binding:"required"`
-	LastName  string `json:"lastName" binding:"required"`
-	CompanyID int    `json:"companyId" binding:"required"`
+	FirstName  string `json:"firstName" binding:"required"`
+	LastName   string `json:"lastName" binding:"required"`
+	PositionID int    `json:"positionId" binding:"required"`
+	CompanyID  int    `json:"companyId" binding:"required"`
+}
+
+type UpdateEmployeeInput struct {
+	ID         int    `json:"id" binding:"required"`
+	FirstName  string `json:"firstName" binding:"required"`
+	LastName   string `json:"lastName" binding:"required"`
+	PositionID int    `json:"positionId" binding:"required"`
 }
 
 type CreatePositionInput struct {
@@ -38,6 +46,7 @@ type Company struct {
 type Employee struct {
 	ID           int    `json:"id"`
 	PositionID   int    `json:"positionId"`
+	CompanyID    int    `json:"companyId"`
 	PositionName string `json:"positionName"`
 	FirstName    string `json:"firstName"`
 	LastName     string `json:"lastName"`

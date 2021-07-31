@@ -46,7 +46,7 @@ func GetCompanyPositions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	positions, err := GetAllPositions(intCompanyId, DB)
+	positions, err := GetAllPositions(intCompanyId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

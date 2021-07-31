@@ -35,7 +35,8 @@ func IsAuthorized(handler http.Handler) http.Handler {
 			})
 
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				log.Println("err:", err)
+				http.Error(w, err.Error(), http.StatusUnauthorized)
 			}
 			//log.Println("claims:", claims)
 			if token.Valid {
@@ -72,6 +73,7 @@ func main() {
 	api.Use(IsAuthorized)
 	companyRouter := api.PathPrefix("/company").Subrouter()
 	positionRouter := api.PathPrefix("/position").Subrouter()
+	employeeRouter := api.PathPrefix("/employee").Subrouter()
 
 	//Serve the index.html page for the base route
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build")))
@@ -80,10 +82,15 @@ func main() {
 	companyRouter.HandleFunc("/{companyID}/employees", GetCompanyEmployees).Methods("GET")
 	companyRouter.HandleFunc("/{companyID}/positions", GetCompanyPositions).Methods("GET")
 
-	//Set up the positions router
+	//Set up the position router
 	positionRouter.HandleFunc("/", CreatePosition).Methods("POST")
 	positionRouter.HandleFunc("/{positionID}", UpdatePosition).Methods("PUT")
 	positionRouter.HandleFunc("/{positionID}", DeletePosition).Methods("DELETE")
+
+	//Set up employee router
+	employeeRouter.HandleFunc("/", CreateEmployee).Methods("POST")
+	employeeRouter.HandleFunc("/{employeeID}", UpdateEmployee).Methods("PUT")
+	employeeRouter.HandleFunc("/{employeeID}", DeleteEmployee).Methods("DELETE")
 
 	nonAuth.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
 		var loginInput models.LoginInput
