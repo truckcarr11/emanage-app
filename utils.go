@@ -20,7 +20,7 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func GetAllEmployees(companyID int) ([]models.Employee, error) {
-	rows, err := DB.Query(`SELECT * FROM employees WHERE company_id=$1`, companyID)
+	rows, err := DB.Query(`SELECT e.*, p.name FROM employees e JOIN positions p on p.id = e.position_id WHERE e.company_id=$1`, companyID)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func GetAllEmployees(companyID int) ([]models.Employee, error) {
 	var employees []models.Employee
 	for rows.Next() {
 		var employee models.Employee
-		rows.Scan(&employee.ID, &employee.PositionID, &employee.CompanyID, &employee.FirstName, &employee.LastName)
+		rows.Scan(&employee.ID, &employee.PositionID, &employee.CompanyID, &employee.FirstName, &employee.LastName, &employee.PositionName)
 		employees = append(employees, employee)
 	}
 

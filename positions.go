@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/truckcarr11/emanage/models"
@@ -63,6 +64,10 @@ func DeletePosition(w http.ResponseWriter, r *http.Request) {
 	_, err := DB.Exec(`DELETE FROM positions where positions.id=$1`, positionID)
 	if err != nil {
 		log.Println("err:", err)
+		if strings.Contains(err.Error(), "violates foreign key constraint") {
+			http.Error(w, "Employees with that position still exist.", http.StatusConflict)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

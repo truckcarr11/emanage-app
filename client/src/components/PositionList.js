@@ -1,8 +1,8 @@
 import { DataGrid } from "@material-ui/data-grid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectPositions, setPositions } from "../appReducer";
-import { cloneDeep } from "lodash";
+import { cloneDeep, isEmpty } from "lodash";
 import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Snackbar from "@material-ui/core/Snackbar";
@@ -20,6 +20,7 @@ export default function PositionList() {
   const [deletedRow, setDeletedRow] = useState({});
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertText, setAlertText] = useState("");
+  const [deleteParams, setDeleteParams] = useState({});
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -81,40 +82,55 @@ export default function PositionList() {
 
   function deleteRow(params) {
     setDeletedRow(params.row);
+    setDeleteParams(params);
     let tempPositions = cloneDeep(positions);
     let deleteId = tempPositions.findIndex(
       (position) => position.id === params.row.id
     );
     tempPositions.splice(deleteId, 1);
     dispatch(setPositions(tempPositions));
-
-    fetch(`/api/position/${params.row.id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((response) => {
-        if (response.status !== 200) {
-          //Something went wrong, revent change
-          if (response.status !== 401) {
-            let tempPositions = cloneDeep(positions);
-            tempPositions.push(deletedRow);
-            dispatch(setPositions(tempPositions));
-            setAlertOpen(true);
-            setAlertText("Something went wrong. Changes have been reverted.");
-          } else {
-            setAlertOpen(true);
-            setAlertText(
-              "Your session has expired. Please signout and sign back in."
-            );
-          }
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   }
+
+  useEffect(() => {
+    if (!isEmpty(deleteParams)) {
+      fetch(`/api/position/${deleteParams.row.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+        .then((response) => {
+          if (response.status !== 200) {
+            //Something went wrong, revent change
+            if (response.status === 409) {
+              setAlertOpen(true);
+              setAlertText("Employees with that position still exist.");
+              let tempPositions = cloneDeep(positions);
+              tempPositions.push(deletedRow);
+              dispatch(setPositions(tempPositions));
+              return;
+            }
+            if (response.status !== 401) {
+              let tempPositions = cloneDeep(positions);
+              tempPositions.push(deletedRow);
+              dispatch(setPositions(tempPositions));
+              setAlertOpen(true);
+              setAlertText("Something went wrong. Changes have been reverted.");
+              return;
+            } else {
+              setAlertOpen(true);
+              setAlertText(
+                "Your session has expired. Please signout and sign back in."
+              );
+              return;
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, [deletedRow]);
 
   return (
     <>
