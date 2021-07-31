@@ -1,16 +1,10 @@
 import { DataGrid } from "@material-ui/data-grid";
-import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectEmployees, selectPositions } from "../appReducer";
 
-export default function EmployeeList(props) {
+export default function EmployeeList() {
   const positions = useSelector(selectPositions);
-  const employeesTemp = useSelector(selectEmployees);
-  const [employees, setEmployees] = useState(employeesTemp);
-
-  useEffect(() => {
-    setEmployees(employeesTemp);
-  }, [employeesTemp]);
+  const employees = useSelector(selectEmployees);
 
   return (
     <div style={{ height: 400, width: "100%" }}>

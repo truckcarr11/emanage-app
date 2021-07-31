@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/truckcarr11/emanage/models"
 )
 
@@ -29,4 +31,25 @@ func CreatePosition(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(positions)
+}
+
+func UpdatePosition(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	positionID := vars["positionID"]
+
+	var updatePositionInput models.UpdatePositionInput
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	json.Unmarshal(reqBody, &updatePositionInput)
+
+	_, err = DB.Query(`UPDATE positions SET name=$1 WHERE positions.id=$2`, updatePositionInput.Name, positionID)
+	if err != nil {
+		log.Println("err:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

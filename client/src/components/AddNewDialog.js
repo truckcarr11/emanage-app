@@ -101,7 +101,9 @@ export default function AddNewDialog(props) {
                   autoWidth
                 >
                   {positions.map((position) => (
-                    <MenuItem value={position.id}>{position.Name}</MenuItem>
+                    <MenuItem value={position.id} key={position.id}>
+                      {position.Name}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>

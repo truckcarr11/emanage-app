@@ -17,6 +17,12 @@ import { setUser } from "../appReducer";
 import { useDispatch } from "react-redux";
 import jwt_decode from "jwt-decode";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -60,6 +66,7 @@ export default function SignInPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
+  const [alertOpen, setAlertOpen] = React.useState(false);
 
   function signIn(e) {
     setSigningIn(true);
@@ -72,7 +79,13 @@ export default function SignInPage() {
         password,
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401) {
+          setSigningIn(false);
+          setAlertOpen(true);
+          return;
+        } else return response.json();
+      })
       .then((data) => {
         if (data !== undefined) {
           let decoded = jwt_decode(data);
@@ -86,6 +99,14 @@ export default function SignInPage() {
         console.log(error);
       });
   }
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setAlertOpen(false);
+  };
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -167,6 +188,16 @@ export default function SignInPage() {
           </form>
         </div>
       </Grid>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="error">
+          Wrong username or password
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }

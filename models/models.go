@@ -25,6 +25,11 @@ type CreatePositionInput struct {
 	Name      string `json:"name" binding:"required"`
 }
 
+type UpdatePositionInput struct {
+	PositionID int    `json:"positionId" binding:"required"`
+	Name       string `json:"name" binding:"required"`
+}
+
 type Company struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`

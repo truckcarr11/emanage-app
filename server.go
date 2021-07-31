@@ -82,6 +82,7 @@ func main() {
 
 	//Set up the positions router
 	positionRouter.HandleFunc("/", CreatePosition).Methods("POST")
+	positionRouter.HandleFunc("/{positionID}", UpdatePosition).Methods("PUT")
 
 	nonAuth.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
 		var loginInput models.LoginInput
