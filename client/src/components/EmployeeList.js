@@ -5,14 +5,30 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectEmployees, selectPositions, setEmployees } from "../appReducer";
 import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 export default function EmployeeList() {
   const dispatch = useDispatch();
-  const positions = useSelector(selectPositions);
-  const employees = useSelector(selectEmployees);
+  const positions = useSelector(selectPositions) || [];
+  const employees = useSelector(selectEmployees) || [];
   const [token] = useState(localStorage.getItem("eManageToken"));
   const [previousState, setPreviousState] = useState({});
   const [deletedRow, setDeletedRow] = useState({});
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertText, setAlertText] = useState("");
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setAlertOpen(false);
+  };
 
   function onEditCellChangeCommitted(data) {
     setPreviousState(data);
@@ -51,12 +67,21 @@ export default function EmployeeList() {
       .then((response) => {
         if (response.status !== 200) {
           //Something went wrong, revent change
-          let tempEmployees = cloneDeep(employees);
-          tempEmployees.forEach((employee) => {
-            if (employee.id === previousState.id)
-              employee[previousState.field] = previousState.value;
-          });
-          dispatch(setEmployees(tempEmployees));
+          if (response.status !== 401) {
+            let tempEmployees = cloneDeep(employees);
+            tempEmployees.forEach((employee) => {
+              if (employee.id === previousState.id)
+                employee[previousState.field] = previousState.value;
+            });
+            dispatch(setEmployees(tempEmployees));
+            setAlertOpen(true);
+            setAlertText("Something went wrong. Changes have been reverted.");
+          } else {
+            setAlertOpen(true);
+            setAlertText(
+              "Your session has expired. Please signout and sign back in."
+            );
+          }
         }
       })
       .catch((error) => {
@@ -82,9 +107,18 @@ export default function EmployeeList() {
       .then((response) => {
         if (response.status !== 200) {
           //Something went wrong, revent change
-          let tempEmployees = cloneDeep(employees);
-          tempEmployees.push(deletedRow);
-          dispatch(setEmployees(tempEmployees));
+          if (response.status !== 401) {
+            let tempEmployees = cloneDeep(employees);
+            tempEmployees.push(deletedRow);
+            dispatch(setEmployees(tempEmployees));
+            setAlertOpen(true);
+            setAlertText("Something went wrong. Changes have been reverted.");
+          } else {
+            setAlertOpen(true);
+            setAlertText(
+              "Your session has expired. Please signout and sign back in."
+            );
+          }
         }
       })
       .catch((error) => {
@@ -97,70 +131,82 @@ export default function EmployeeList() {
   }
 
   return (
-    <div style={{ height: 400, width: "100%" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ flexGrow: 1 }}>
-          <DataGrid
-            autoHeight
-            disableSelectionOnClick
-            getRowId={(employee) => employee.id}
-            columns={[
-              {
-                field: "id",
-                type: "string",
-                headerName: "Employee Id",
-                width: 300,
-              },
-              {
-                field: "firstName",
-                type: "string",
-                headerName: "First Name",
-                width: 300,
-                editable: true,
-              },
-              {
-                field: "lastName",
-                type: "string",
-                headerName: "Last Name",
-                width: 300,
-                editable: true,
-              },
-              {
-                field: "positionId",
-                headerName: "Position",
-                type: "singleSelect",
-                width: 300,
-                valueGetter: getPositionName,
-                valueOptions: positions.map((position) => {
-                  return { label: position.name, value: position.id };
-                }),
-                editable: true,
-              },
-              {
-                field: "",
-                align: "center",
-                disableColumnMenu: true,
-                hideSortIcons: true,
-                disableClickEventBubbling: true,
-                renderCell: (params) => {
-                  return (
-                    <IconButton
-                      aria-label="delete"
-                      color="secondary"
-                      onClick={() => deleteRow(params)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  );
+    <>
+      <div style={{ height: 400, width: "100%" }}>
+        <div style={{ display: "flex", height: "100%" }}>
+          <div style={{ flexGrow: 1 }}>
+            <DataGrid
+              autoHeight
+              disableSelectionOnClick
+              getRowId={(employee) => employee.id}
+              columns={[
+                {
+                  field: "id",
+                  type: "string",
+                  headerName: "Employee Id",
+                  width: 300,
                 },
-              },
-            ]}
-            onCellValueChange={onCellValueChange}
-            onEditCellChangeCommitted={onEditCellChangeCommitted}
-            rows={employees}
-          />
+                {
+                  field: "firstName",
+                  type: "string",
+                  headerName: "First Name",
+                  width: 300,
+                  editable: true,
+                },
+                {
+                  field: "lastName",
+                  type: "string",
+                  headerName: "Last Name",
+                  width: 300,
+                  editable: true,
+                },
+                {
+                  field: "positionId",
+                  headerName: "Position",
+                  type: "singleSelect",
+                  width: 300,
+                  valueGetter: getPositionName,
+                  valueOptions: positions.map((position) => {
+                    return { label: position.name, value: position.id };
+                  }),
+                  editable: true,
+                },
+                {
+                  field: "",
+                  align: "center",
+                  disableColumnMenu: true,
+                  hideSortIcons: true,
+                  disableClickEventBubbling: true,
+                  renderCell: (params) => {
+                    return (
+                      <IconButton
+                        aria-label="delete"
+                        color="secondary"
+                        onClick={() => deleteRow(params)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    );
+                  },
+                },
+              ]}
+              onCellValueChange={onCellValueChange}
+              onEditCellChangeCommitted={onEditCellChangeCommitted}
+              rows={employees}
+            />
+          </div>
         </div>
       </div>
-    </div>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="error">
+          {alertText}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }

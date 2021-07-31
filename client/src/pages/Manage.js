@@ -5,8 +5,13 @@ import { useDispatch } from "react-redux";
 import { setPositions, setEmployees, setUser } from "../appReducer";
 import { useEffect, useState } from "react";
 import PositionList from "../components/PositionList";
-import { Box } from "@material-ui/core";
+import { Box, Snackbar } from "@material-ui/core";
 import AddNewDialog from "../components/AddNewDialog";
+import MuiAlert from "@material-ui/lab/Alert";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 export default function Manage() {
   const dispatch = useDispatch();
@@ -16,6 +21,16 @@ export default function Manage() {
     localStorage.getItem("managePage")
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertText, setAlertText] = useState("");
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setAlertOpen(false);
+  };
 
   useEffect(() => {
     if (user !== null) {
@@ -25,20 +40,50 @@ export default function Manage() {
           Authorization: "Bearer " + token,
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.status === 401) {
+            setAlertOpen(true);
+            setAlertText(
+              "Your session has expired. Please signout and sign back in."
+            );
+            return;
+          } else if (response.status === 200) return response.json();
+          else {
+            setAlertOpen(true);
+            setAlertText("Something went wrong. Try again later.");
+          }
+        })
         .then((data) => {
-          if (data !== null) {
+          if (data !== undefined) {
             dispatch(setEmployees(data));
           }
+        })
+        .catch((error) => {
+          console.log(error);
         });
       fetch(`/api/company/${user.companyId}/positions`, {
         headers: {
           Authorization: "Bearer " + token,
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.status === 401) {
+            setAlertOpen(true);
+            setAlertText(
+              "Your session has expired. Please signout and sign back in."
+            );
+            return;
+          } else if (response.status === 200) return response.json();
+          else {
+            setAlertOpen(true);
+            setAlertText("Something went wrong. Try again later.");
+          }
+        })
         .then((data) => {
-          if (data !== null) dispatch(setPositions(data));
+          if (data !== undefined) dispatch(setPositions(data));
+        })
+        .catch((error) => {
+          console.log(error);
         });
     } else {
       //User is not logged in, send them to sign in page with no back button
@@ -65,6 +110,16 @@ export default function Manage() {
         setOpen={setDialogOpen}
         type={managePage}
       />
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="error">
+          {alertText}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

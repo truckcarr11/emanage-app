@@ -17,6 +17,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import InputLabel from "@material-ui/core/InputLabel";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -33,17 +39,27 @@ export default function AddNewDialog(props) {
   const dispatch = useDispatch();
 
   const [token] = useState(localStorage.getItem("eManageToken"));
-  const positions = useSelector(selectPositions);
+  const positions = useSelector(selectPositions) || [];
   const user = useSelector(selectUser);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [positionId, setPositionId] = useState("");
   const [positionName, setPositionName] = useState("");
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertText, setAlertText] = useState("");
 
   function handleAdd() {
     if (props.type === "employees") addNewEmployee();
     else addNewPosition();
   }
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setAlertOpen(false);
+  };
 
   function addNewEmployee() {
     fetch("/api/employee/", {
@@ -58,15 +74,31 @@ export default function AddNewDialog(props) {
         companyId: user.companyId,
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401) {
+          setAlertOpen(true);
+          setAlertText(
+            "Your session has expired. Please signout and sign back in."
+          );
+          return;
+        } else if (response.status === 200) return response.json();
+        else {
+          setAlertOpen(true);
+          setAlertText("Something went wrong. Try again later.");
+          return;
+        }
+      })
       .then((data) => {
-        if (data !== null) {
+        if (data !== undefined) {
           dispatch(setEmployees(data));
           props.setOpen(false);
           setFirstName("");
           setLastName("");
           setPositionId("");
         }
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 
@@ -81,13 +113,28 @@ export default function AddNewDialog(props) {
         companyId: user.companyId,
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401) {
+          setAlertOpen(true);
+          setAlertText(
+            "Your session has expired. Please signout and sign back in."
+          );
+          return;
+        } else if (response.status === 200) return response.json();
+        else {
+          setAlertOpen(true);
+          setAlertText("Something went wrong. Try again later.");
+        }
+      })
       .then((data) => {
-        if (data !== null) {
+        if (data !== undefined) {
           dispatch(setPositions(data));
           props.setOpen(false);
           setPositionName("");
         }
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 
@@ -163,6 +210,16 @@ export default function AddNewDialog(props) {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="error">
+          {alertText}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

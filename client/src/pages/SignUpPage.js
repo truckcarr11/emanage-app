@@ -77,6 +77,9 @@ export default function SignUpPage() {
         if (data.status === 200) {
           history.push("/signin");
         }
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }
 
