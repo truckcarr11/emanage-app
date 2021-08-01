@@ -23,3 +23,9 @@ The root of the project consists of some GO files used to run the back end. The 
 6. Run npm start
 
 Navigate to localhost:3000/signin or localhost:3000/signup to check it out.
+
+### Screenshots
+
+![sign up page](signup.png)
+![add employee dialog](addemployee.png)
+![list of postions](positionslist.png)
