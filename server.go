@@ -37,6 +37,7 @@ func IsAuthorized(handler http.Handler) http.Handler {
 			if err != nil {
 				log.Println("err:", err)
 				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
 			}
 			//log.Println("claims:", claims)
 			if token.Valid {
@@ -125,6 +126,8 @@ func main() {
 		token, err := GenerateJWT(JWT_SECRET, user)
 		if err != nil {
 			fmt.Println("Failed to generate token")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		json.NewEncoder(w).Encode(token)
@@ -151,14 +154,14 @@ func main() {
 			return
 		}
 
-		_, err = db.Query(`INSERT INTO users (first_name, last_name, company_id, username, password, email) VALUES($1, $2, $3, $4, $5, $6)`,
+		_, err = db.Exec(`INSERT INTO users (first_name, last_name, company_id, username, password, email) VALUES($1, $2, $3, $4, $5, $6)`,
 			registerInput.FirstName, registerInput.LastName, newCompany.ID, registerInput.Username, passwordHash, registerInput.Email)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusCreated)
 	}).Methods("POST")
 
 	port := os.Getenv("PORT")

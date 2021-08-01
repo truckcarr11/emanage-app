@@ -18,7 +18,7 @@ func CreateEmployee(w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(reqBody, &createEmployeeInput)
 
-	_, err = DB.Query(`INSERT INTO employees (first_name, last_name, position_id, company_id) VALUES($1, $2, $3, $4)`,
+	_, err = DB.Exec(`INSERT INTO employees (first_name, last_name, position_id, company_id) VALUES($1, $2, $3, $4)`,
 		createEmployeeInput.FirstName, createEmployeeInput.LastName, createEmployeeInput.PositionID, createEmployeeInput.CompanyID)
 	if err != nil {
 		log.Println("err:", err)

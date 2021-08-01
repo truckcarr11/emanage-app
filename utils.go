@@ -36,6 +36,7 @@ func GetAllEmployees(companyID int) ([]models.Employee, error) {
 	err = rows.Err()
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	return employees, nil
@@ -58,6 +59,7 @@ func GetAllPositions(companyID int) ([]models.Position, error) {
 	err = rows.Err()
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	return positions, nil

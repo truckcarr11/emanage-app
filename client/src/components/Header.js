@@ -41,6 +41,7 @@ export default function Header(props) {
 
   function onSignOut() {
     localStorage.removeItem("eManageUser");
+    localStorage.removeItem("eManageToken");
     history.push("/signin");
   }
 

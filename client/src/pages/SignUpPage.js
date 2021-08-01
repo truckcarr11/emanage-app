@@ -74,7 +74,7 @@ export default function SignUpPage() {
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.status === 200) {
+        if (data.status === 201) {
           history.push("/signin");
         }
       })

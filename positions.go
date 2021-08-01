@@ -16,10 +16,11 @@ func CreatePosition(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	json.Unmarshal(reqBody, &createPositionInput)
 
-	_, err = DB.Query(`INSERT INTO positions (name, company_id) VALUES($1, $2)`, createPositionInput.Name, createPositionInput.CompanyID)
+	_, err = DB.Exec(`INSERT INTO positions (name, company_id) VALUES($1, $2)`, createPositionInput.Name, createPositionInput.CompanyID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -47,7 +48,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(reqBody, &updatePositionInput)
 
-	_, err = DB.Query(`UPDATE positions SET name=$1 WHERE positions.id=$2`, updatePositionInput.Name, positionID)
+	_, err = DB.Exec(`UPDATE positions SET name=$1 WHERE positions.id=$2`, updatePositionInput.Name, positionID)
 	if err != nil {
 		log.Println("err:", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
