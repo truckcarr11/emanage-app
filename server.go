@@ -161,5 +161,12 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	}).Methods("POST")
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	port := os.Getenv("PORT")
+	if port != "" {
+		port = ":" + port
+	} else {
+		port = ":8080"
+	}
+
+	log.Fatal(http.ListenAndServe(port, router))
 }
