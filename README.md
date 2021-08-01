@@ -26,6 +26,6 @@ Navigate to localhost:3000/signin or localhost:3000/signup to check it out.
 
 ### Screenshots
 
-![sign up page](signup.png)
-![add employee dialog](addemployee.png)
-![list of postions](positionslist.png)
+![sign up page](signup.PNG)
+![add employee dialog](addemployee.PNG)
+![list of postions](positionslist.PNG)
